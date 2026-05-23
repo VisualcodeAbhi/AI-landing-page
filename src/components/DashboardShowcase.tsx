@@ -1,0 +1,413 @@
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, BarChart2, MessageSquare, Sparkles, Database, Check, Clock } from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+interface ChatMessage {
+  sender: 'user' | 'neuro';
+  text: string;
+  isCode?: boolean;
+}
+
+export default function DashboardShowcase() {
+  const [activeTab, setActiveTab] = useState<'chat' | 'analytics' | 'variables'>('chat');
+  const [chatInput, setChatInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+  
+  // Dynamic metrics
+  const [savings, setSavings] = useState(4824.50);
+  const [activeAgents, setActiveAgents] = useState(14);
+  const [efficiency, setEfficiency] = useState(94.2);
+
+  // Chat stack
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { sender: 'neuro', text: "Welcome to NeuroAI Core. I am synced with your data layers. What system would you like to automate today?" }
+  ]);
+
+  const presetPrompts = [
+    "Draft a GraphQL resolver for user profiles",
+    "Analyze pipeline compute bottlenecks",
+    "Orchestrate marketing trigger workflows"
+  ];
+
+  // Auto-increment savings (makes dashboard feel alive!)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSavings((prev) => prev + Number((Math.random() * 0.08).toFixed(2)));
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
+
+  const handleSendMessage = (text: string) => {
+    if (!text.trim() || isTyping) return;
+
+    // 1. Add User Message
+    const userMsg: ChatMessage = { sender: 'user', text };
+    setMessages((prev) => [...prev, userMsg]);
+    setChatInput('');
+    setIsTyping(true);
+
+    // 2. Simulate AI Streaming Response
+    setTimeout(() => {
+      let aiText = '';
+      let isCode = false;
+      
+      if (text.toLowerCase().includes('graphql') || text.toLowerCase().includes('resolver')) {
+        aiText = `\`\`\`javascript
+// GraphQL Resolver for User Profiles
+const userProfileResolver = {
+  Query: {
+    getUserProfile: async (_, { id }, { dataSources }) => {
+      try {
+        const cached = await redis.get(\`user:\${id}\`);
+        if (cached) return JSON.parse(cached);
+        
+        const profile = await dataSources.db.fetchProfile(id);
+        await redis.set(\`user:\${id}\`, JSON.stringify(profile), 'EX', 3600);
+        return profile;
+      } catch (err) {
+        throw new Error("Failed to resolve user profile path: " + err.message);
+      }
+    }
+  }
+};
+export default userProfileResolver;
+\`\`\``;
+        isCode = true;
+      } else if (text.toLowerCase().includes('bottleneck') || text.toLowerCase().includes('pipeline')) {
+        aiText = "🔍 **Bottleneck Audit Complete:**\n\n1. Found **34ms** query choke point in \`orders-db-read\` cluster.\n2. Proposed Fix: Establish composite index on \`[user_id, status]\` key matrices.\n3. Latency expected to drop to **4ms** (approx 8.5x increase in operational velocity).";
+      } else {
+        aiText = `✨ **Autonomous Workflow Created:**\n\n1. **Trigger**: User signs up via Web Client.\n2. **Action A**: Extract embedding using \`neuro-embed-v2\` (Done - 18ms).\n3. **Action B**: Inject personalized workflow variables into DB grid.\n4. **Action C**: Dispatched glowing welcome campaign through edge relays.`;
+      }
+
+      setMessages((prev) => [...prev, { sender: 'neuro', text: aiText, isCode }]);
+      setIsTyping(false);
+      
+      // Fun visual success reward
+      confetti({
+        particleCount: 50,
+        spread: 40,
+        origin: { x: 0.75, y: 0.6 },
+        colors: ['#06b6d4', '#a855f7']
+      });
+
+      // Boost metrics slightly
+      setActiveAgents((prev) => prev + 1);
+      setEfficiency((prev) => Math.min(99.9, +(prev + Math.random() * 0.4).toFixed(1)));
+    }, 1500);
+  };
+
+  return (
+    <section id="solutions" className="relative py-28 bg-[#030014] overflow-hidden">
+      {/* Background neon blurs */}
+      <div className="absolute top-1/4 left-[-15%] w-[550px] h-[550px] bg-cyan-500/10 blur-[130px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 right-[-15%] w-[550px] h-[550px] bg-purple-500/10 blur-[130px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Section Title */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <div className="text-xs uppercase font-space font-bold tracking-widest text-cyan-400 mb-3 bg-cyan-500/10 px-3 py-1 rounded-full inline-block">
+              Interactive Console
+            </div>
+            <h2 className="text-4xl md:text-5xl font-space font-bold leading-tight">
+              Test-drive the future <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-500 text-glow-cyan">
+                in Real Time
+              </span>
+            </h2>
+          </div>
+          <p className="text-slate-400 font-poppins max-w-md md:text-right">
+            Click a quick preset or type directly in our terminal frame to see how NeuroAI resolves agent workflows, compiles endpoints, and optimizes pipelines autonomously.
+          </p>
+        </div>
+
+        {/* Dashboard Frame */}
+        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/10 grid grid-cols-1 lg:grid-cols-4 min-h-[620px]">
+          
+          {/* Left Column: Console Sidebar Navigation */}
+          <div className="lg:col-span-1 border-r border-white/10 p-6 flex flex-col gap-6 bg-slate-950/40">
+            <div className="flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+              <span className="font-space font-semibold text-sm tracking-wider text-slate-300">NEUROAI CONSOLE</span>
+            </div>
+
+            {/* Sidebar Tabs */}
+            <div className="flex flex-col gap-2 flex-grow">
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-space transition-all duration-300 ${
+                  activeTab === 'chat'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-indigo-500/10 border border-cyan-500/30 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 text-cyan-400" />
+                AI Assistant
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-space transition-all duration-300 ${
+                  activeTab === 'analytics'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-indigo-500/10 border border-cyan-500/30 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <BarChart2 className="w-4 h-4 text-indigo-400" />
+                Live Pipelines
+              </button>
+              <button
+                onClick={() => setActiveTab('variables')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-space transition-all duration-300 ${
+                  activeTab === 'variables'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-indigo-500/10 border border-cyan-500/30 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <Database className="w-4 h-4 text-purple-400" />
+                Prompt Variables
+              </button>
+            </div>
+
+            {/* System Status Foot */}
+            <div className="p-4 rounded-xl bg-slate-900/50 border border-white/5 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">API Status</span>
+                <span className="text-emerald-400 font-bold">100% UP</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Decentral Grid</span>
+                <span className="text-cyan-400">4,912 Nodes</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Area: Showcase Panel */}
+          <div className="lg:col-span-3 flex flex-col justify-between bg-slate-950/20 min-h-[500px]">
+            
+            {/* Top Dashboard Banner - KPI Metric Badges */}
+            <div className="grid grid-cols-3 border-b border-white/10 py-5 bg-slate-950/20 text-center">
+              <div className="border-r border-white/10 px-4">
+                <div className="text-[10px] uppercase font-space tracking-widest text-slate-500 mb-1">Savings Simulated</div>
+                <div className="text-lg md:text-xl font-bold text-emerald-400 font-space tracking-tight">
+                  ${savings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div className="border-r border-white/10 px-4">
+                <div className="text-[10px] uppercase font-space tracking-widest text-slate-500 mb-1">Active AI Agents</div>
+                <div className="text-lg md:text-xl font-bold text-white font-space">
+                  {activeAgents} <span className="text-xs text-slate-500">Clusters</span>
+                </div>
+              </div>
+              <div className="px-4">
+                <div className="text-[10px] uppercase font-space tracking-widest text-slate-500 mb-1">Workflow Efficiency</div>
+                <div className="text-lg md:text-xl font-bold text-cyan-400 font-space">
+                  {efficiency}%
+                </div>
+              </div>
+            </div>
+
+            {/* Tab: Chat Interface */}
+            {activeTab === 'chat' && (
+              <div className="flex-grow flex flex-col justify-between overflow-hidden">
+                {/* Chat Panel Box */}
+                <div className="flex-grow p-6 overflow-y-auto max-h-[380px] space-y-4 no-scrollbar">
+                  {messages.map((msg, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg ${
+                          msg.sender === 'user'
+                            ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-br-none'
+                            : 'bg-slate-900/80 border border-white/5 text-slate-200 rounded-bl-none font-poppins'
+                        }`}
+                      >
+                        {msg.isCode ? (
+                          <pre className="font-mono text-xs overflow-x-auto p-3 rounded-lg bg-slate-950/90 text-cyan-300 select-all leading-normal border border-white/5">
+                            <code>{msg.text.replace(/```javascript|```/g, '')}</code>
+                          </pre>
+                        ) : (
+                          <div className="whitespace-pre-line leading-relaxed">
+                            {msg.text}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {/* Typing Indicator */}
+                  <AnimatePresence>
+                    {isTyping && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="flex justify-start"
+                      >
+                        <div className="bg-slate-900/80 border border-white/5 rounded-2xl rounded-bl-none p-4 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div ref={chatBottomRef} />
+                </div>
+
+                {/* Bottom Actions Frame */}
+                <div className="p-6 border-t border-white/10 bg-slate-950/40 space-y-4">
+                  {/* Preset helpers */}
+                  <div className="flex flex-wrap gap-2">
+                    {presetPrompts.map((prompt, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSendMessage(prompt)}
+                        className="text-[11px] font-space font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-white/5 hover:border-cyan-500/20 px-3 py-1.5 rounded-lg transition-all duration-200"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Input form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendMessage(chatInput);
+                    }}
+                    className="flex gap-3"
+                  >
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Prompt NeuroAI Core..."
+                      className="flex-grow bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/30 focus:ring-1 focus:ring-cyan-500/20 transition-all font-poppins text-white placeholder-slate-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isTyping || !chatInput.trim()}
+                      className="p-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 disabled:opacity-50 text-white rounded-xl flex items-center justify-center transition-all duration-300"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Live Analytics Charts */}
+            {activeTab === 'analytics' && (
+              <div className="flex-grow p-6 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-space font-medium text-slate-200">Autonomous Workflow Latency</h4>
+                      <p className="text-xs text-slate-500">Latency analytics over global nodes</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5 text-slate-400">
+                      <Clock className="w-3.5 h-3.5 text-cyan-400" /> Auto-syncing
+                    </div>
+                  </div>
+
+                  {/* Dynamic Graphic Lines */}
+                  <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 h-48 flex items-end">
+                    <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
+                      <path
+                        d="M0,120 Q50,70 100,110 T200,40 T300,90 T400,30 T500,60"
+                        fill="none"
+                        stroke="url(#cyan-flow)"
+                        strokeWidth="3"
+                      />
+                      <defs>
+                        <linearGradient id="cyan-flow" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#06b6d4" />
+                          <stop offset="100%" stopColor="#a855f7" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 text-center">
+                    <div className="text-[10px] text-slate-500 font-space mb-1">AVG RESPONSE</div>
+                    <div className="text-base font-bold font-space text-white">84.2 ms</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 text-center">
+                    <div className="text-[10px] text-slate-500 font-space mb-1">THROUGHPUT</div>
+                    <div className="text-base font-bold font-space text-white">12.4k req/m</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 text-center">
+                    <div className="text-[10px] text-slate-500 font-space mb-1">CACHE RATIO</div>
+                    <div className="text-base font-bold font-space text-cyan-400">92.4%</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 text-center">
+                    <div className="text-[10px] text-slate-500 font-space mb-1">SAVINGS MULTIPLIER</div>
+                    <div className="text-base font-bold font-space text-emerald-400">12.5x</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Prompt Variables */}
+            {activeTab === 'variables' && (
+              <div className="flex-grow p-6 flex flex-col justify-between">
+                <div className="space-y-5">
+                  <div>
+                    <h4 className="text-sm font-space font-medium text-slate-200">System prompt parameters</h4>
+                    <p className="text-xs text-slate-500">Tune operational context and model constraints</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300">Model Temperature</div>
+                        <div className="text-[10px] text-slate-500">Determines random creative generation boundaries</div>
+                      </div>
+                      <div className="w-24 text-right font-mono text-sm text-cyan-400">0.2 (Low Temp)</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300">Prompt Embeddings Context</div>
+                        <div className="text-[10px] text-slate-500">System prompts injected for custom databases</div>
+                      </div>
+                      <div className="w-24 text-right font-mono text-sm text-indigo-400">10-layers active</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300">Safe Guarding Core</div>
+                        <div className="text-[10px] text-slate-500">Intercepts hallucination states and system commands</div>
+                      </div>
+                      <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                        <Check className="w-3.5 h-3.5" /> SECURE
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-950/20 to-purple-950/20 border border-indigo-500/10 text-xs text-slate-400 mt-6 flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+                  <span>Changing these variables affects live inference outputs in the AI Assistant tab. Lower temperatures yield structured coding outputs, while higher variables optimize text messaging.</span>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
