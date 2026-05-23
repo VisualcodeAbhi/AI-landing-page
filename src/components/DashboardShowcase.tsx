@@ -15,15 +15,29 @@ export default function DashboardShowcase() {
   const [isTyping, setIsTyping] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   
+  // Real Gemini states
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('neuro_gemini_api_key') || '');
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [modelType, setModelType] = useState(() => localStorage.getItem('neuro_gemini_model') || 'gemini-1.5-flash');
+  const [temperature, setTemperature] = useState(0.2);
+
   // Dynamic metrics
   const [savings, setSavings] = useState(4824.50);
   const [activeAgents, setActiveAgents] = useState(14);
   const [efficiency, setEfficiency] = useState(94.2);
 
   // Chat stack
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { sender: 'neuro', text: "Welcome to NeuroAI Core. I am synced with your data layers. What system would you like to automate today?" }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const isLive = !!localStorage.getItem('neuro_gemini_api_key');
+    return [
+      { 
+        sender: 'neuro', 
+        text: isLive 
+          ? "🤖 **Gemini Core Connection Established.**\n\nWelcome to NeuroAI Live. I am actively bound to your custom prompt layers and the Google Gemini API. What unscripted task would you like to solve today?" 
+          : "Welcome to NeuroAI Core. I am synced with your data layers. What system would you like to automate today? (Demo Mode - Connect a Gemini Key in Prompt Variables to activate live AI)" 
+      }
+    ];
+  });
 
   const presetPrompts = [
     "Draft a GraphQL resolver for user profiles",
@@ -44,7 +58,7 @@ export default function DashboardShowcase() {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!text.trim() || isTyping) return;
 
     // 1. Add User Message
@@ -53,13 +67,68 @@ export default function DashboardShowcase() {
     setChatInput('');
     setIsTyping(true);
 
-    // 2. Simulate AI Streaming Response
-    setTimeout(() => {
-      let aiText = '';
-      let isCode = false;
-      
-      if (text.toLowerCase().includes('graphql') || text.toLowerCase().includes('resolver')) {
-        aiText = `\`\`\`javascript
+    const savedKey = localStorage.getItem('neuro_gemini_api_key');
+
+    if (savedKey) {
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(savedKey);
+        
+        const model = genAI.getGenerativeModel({
+          model: modelType,
+          generationConfig: {
+            temperature: temperature,
+          },
+          systemInstruction: "You are the core neural model of NeuroAI, a premium next-generation AI automation platform. Respond with high-intelligence, technical efficiency, and structure. Format code snippets in clean markdown. Always maintain the persona of an advanced computational core."
+        });
+
+        // Map messages history to Gemini format: role: "user" | "model", parts: [{ text: "..." }]
+        // Exclude initial greeting and error messages
+        const history = messages
+          .filter(msg => !msg.text.includes('Connection Failure') && !msg.text.includes('Welcome to NeuroAI'))
+          .map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+          }));
+
+        const chatSession = model.startChat({
+          history: history.length > 10 ? history.slice(-10) : history, // Keep history under 10 messages for performance
+        });
+
+        const result = await chatSession.sendMessage(text);
+        const responseText = await result.response.text();
+        const isCode = responseText.includes('```');
+
+        setMessages((prev) => [...prev, { sender: 'neuro', text: responseText, isCode }]);
+        setIsTyping(false);
+
+        // Success burst
+        confetti({
+          particleCount: 50,
+          spread: 45,
+          colors: ['#06b6d4', '#6366f1']
+        });
+
+        // Dynamically increment platform counters
+        setActiveAgents((prev) => prev + 1);
+        setEfficiency((prev) => Math.min(99.9, +(prev + Math.random() * 0.4).toFixed(1)));
+
+      } catch (error: any) {
+        console.error("Gemini API error:", error);
+        setMessages((prev) => [...prev, {
+          sender: 'neuro',
+          text: `❌ **Core Connection Failure:**\n\nFailed to authenticate with Gemini API layers.\n\n**Details**: ${error?.message || 'Unknown network error. Check that your Google Gemini API Key is correct in the Prompt Variables tab.'}`
+        }]);
+        setIsTyping(false);
+      }
+    } else {
+      // Simulate response
+      setTimeout(() => {
+        let aiText = '';
+        let isCode = false;
+        
+        if (text.toLowerCase().includes('graphql') || text.toLowerCase().includes('resolver')) {
+          aiText = `\`\`\`javascript
 // GraphQL Resolver for User Profiles
 const userProfileResolver = {
   Query: {
@@ -79,28 +148,27 @@ const userProfileResolver = {
 };
 export default userProfileResolver;
 \`\`\``;
-        isCode = true;
-      } else if (text.toLowerCase().includes('bottleneck') || text.toLowerCase().includes('pipeline')) {
-        aiText = "🔍 **Bottleneck Audit Complete:**\n\n1. Found **34ms** query choke point in \`orders-db-read\` cluster.\n2. Proposed Fix: Establish composite index on \`[user_id, status]\` key matrices.\n3. Latency expected to drop to **4ms** (approx 8.5x increase in operational velocity).";
-      } else {
-        aiText = `✨ **Autonomous Workflow Created:**\n\n1. **Trigger**: User signs up via Web Client.\n2. **Action A**: Extract embedding using \`neuro-embed-v2\` (Done - 18ms).\n3. **Action B**: Inject personalized workflow variables into DB grid.\n4. **Action C**: Dispatched glowing welcome campaign through edge relays.`;
-      }
+          isCode = true;
+        } else if (text.toLowerCase().includes('bottleneck') || text.toLowerCase().includes('pipeline')) {
+          aiText = "🔍 **Bottleneck Audit Complete:**\n\n1. Found **34ms** query choke point in \`orders-db-read\` cluster.\n2. Proposed Fix: Establish composite index on \`[user_id, status]\` key matrices.\n3. Latency expected to drop to **4ms** (approx 8.5x increase in operational velocity).";
+        } else {
+          aiText = `✨ **Autonomous Workflow Created:**\n\n1. **Trigger**: User signs up via Web Client.\n2. **Action A**: Extract embedding using \`neuro-embed-v2\` (Done - 18ms).\n3. **Action B**: Inject personalized workflow variables into DB grid.\n4. **Action C**: Dispatched glowing welcome campaign through edge relays.`;
+        }
 
-      setMessages((prev) => [...prev, { sender: 'neuro', text: aiText, isCode }]);
-      setIsTyping(false);
-      
-      // Fun visual success reward
-      confetti({
-        particleCount: 50,
-        spread: 40,
-        origin: { x: 0.75, y: 0.6 },
-        colors: ['#06b6d4', '#a855f7']
-      });
+        setMessages((prev) => [...prev, { sender: 'neuro', text: aiText, isCode }]);
+        setIsTyping(false);
+        
+        confetti({
+          particleCount: 50,
+          spread: 40,
+          origin: { x: 0.75, y: 0.6 },
+          colors: ['#06b6d4', '#a855f7']
+        });
 
-      // Boost metrics slightly
-      setActiveAgents((prev) => prev + 1);
-      setEfficiency((prev) => Math.min(99.9, +(prev + Math.random() * 0.4).toFixed(1)));
-    }, 1500);
+        setActiveAgents((prev) => prev + 1);
+        setEfficiency((prev) => Math.min(99.9, +(prev + Math.random() * 0.4).toFixed(1)));
+      }, 1500);
+    }
   };
 
   return (
@@ -363,36 +431,113 @@ export default userProfileResolver;
 
             {/* Tab: Prompt Variables */}
             {activeTab === 'variables' && (
-              <div className="flex-grow p-6 flex flex-col justify-between">
-                <div className="space-y-5">
+              <div className="flex-grow p-6 flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[380px]">
+                <div className="space-y-6">
+                  {/* Title */}
                   <div>
-                    <h4 className="text-sm font-space font-medium text-slate-200">System prompt parameters</h4>
-                    <p className="text-xs text-slate-500">Tune operational context and model constraints</p>
+                    <h4 className="text-sm font-space font-medium text-slate-200">Gemini Platform Settings</h4>
+                    <p className="text-xs text-slate-500">Bridge local sandboxes with real Google Gemini models</p>
                   </div>
 
+                  {/* API Key Vault */}
+                  <div className="p-4 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300">Google Gemini API Key</div>
+                        <div className="text-[10px] text-slate-500">Stored safely in your browser localStorage</div>
+                      </div>
+                      {apiKey ? (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/25">
+                          <Check className="w-3.5 h-3.5" /> LIVE CORE ACTIVE
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/25">
+                          SIMULATION MODE
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={apiKey ? '••••••••••••••••••••••••••••' : apiKeyInput}
+                        disabled={!!apiKey}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="AIzaSy..."
+                        className="flex-grow bg-[#030014]/60 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all font-mono disabled:opacity-60"
+                      />
+                      {apiKey ? (
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem('neuro_gemini_api_key');
+                            setApiKey('');
+                            setApiKeyInput('');
+                          }}
+                          className="px-3.5 py-2.5 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/20 text-rose-400 font-space font-semibold text-xs rounded-xl transition-all"
+                        >
+                          Revoke
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (!apiKeyInput.trim()) return;
+                            localStorage.setItem('neuro_gemini_api_key', apiKeyInput.trim());
+                            setApiKey(apiKeyInput.trim());
+                            confetti({
+                              particleCount: 40,
+                              spread: 30,
+                              colors: ['#06b6d4', '#6366f1']
+                            });
+                          }}
+                          className="px-3.5 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-space font-semibold text-xs rounded-xl transition-all"
+                        >
+                          Sync Key
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Parameters Grid */}
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
+                    {/* Model Type Selector */}
+                    <div className="p-4 rounded-2xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
                       <div>
-                        <div className="text-xs font-semibold text-slate-300">Model Temperature</div>
-                        <div className="text-[10px] text-slate-500">Determines random creative generation boundaries</div>
+                        <div className="text-xs font-semibold text-slate-300">Neural Model Core</div>
+                        <div className="text-[10px] text-slate-500">Pick default computational logic engine</div>
                       </div>
-                      <div className="w-24 text-right font-mono text-sm text-cyan-400">0.2 (Low Temp)</div>
+                      <select
+                        value={modelType}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          localStorage.setItem('neuro_gemini_model', val);
+                          setModelType(val);
+                        }}
+                        className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/30 font-space"
+                      >
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep)</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Latest)</option>
+                      </select>
                     </div>
-                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-semibold text-slate-300">Prompt Embeddings Context</div>
-                        <div className="text-[10px] text-slate-500">System prompts injected for custom databases</div>
+
+                    {/* Model Temperature Slider */}
+                    <div className="p-4 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-xs font-semibold text-slate-300">Model Temperature</div>
+                          <div className="text-[10px] text-slate-500">Determines random generation boundaries</div>
+                        </div>
+                        <span className="font-mono text-xs text-cyan-400">{temperature} ({temperature === 0.2 ? 'Low Temp' : temperature > 0.6 ? 'Creative' : 'Balanced'})</span>
                       </div>
-                      <div className="w-24 text-right font-mono text-sm text-indigo-400">10-layers active</div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-semibold text-slate-300">Safe Guarding Core</div>
-                        <div className="text-[10px] text-slate-500">Intercepts hallucination states and system commands</div>
-                      </div>
-                      <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                        <Check className="w-3.5 h-3.5" /> SECURE
-                      </span>
+                      <input
+                        type="range"
+                        min="0.0"
+                        max="1.0"
+                        step="0.1"
+                        value={temperature}
+                        onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                        className="w-full accent-cyan-500 h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>
