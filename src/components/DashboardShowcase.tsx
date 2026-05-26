@@ -16,7 +16,7 @@ export default function DashboardShowcase() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
   
   // Real Gemini states
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('neuro_gemini_api_key') || '');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('neuro_gemini_api_key') || (import.meta.env.VITE_GEMINI_API_KEY as string) || '');
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [modelType, setModelType] = useState(() => localStorage.getItem('neuro_gemini_model') || 'gemini-1.5-flash');
   const [temperature, setTemperature] = useState(0.2);
@@ -28,7 +28,7 @@ export default function DashboardShowcase() {
 
   // Chat stack
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const isLive = !!localStorage.getItem('neuro_gemini_api_key');
+    const isLive = !!localStorage.getItem('neuro_gemini_api_key') || !!import.meta.env.VITE_GEMINI_API_KEY;
     return [
       { 
         sender: 'neuro', 
@@ -67,7 +67,7 @@ export default function DashboardShowcase() {
     setChatInput('');
     setIsTyping(true);
 
-    const savedKey = localStorage.getItem('neuro_gemini_api_key');
+    const savedKey = localStorage.getItem('neuro_gemini_api_key') || (import.meta.env.VITE_GEMINI_API_KEY as string);
 
     if (savedKey) {
       try {
