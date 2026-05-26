@@ -69,7 +69,7 @@ export default function HowItWorks() {
                     initial={{ opacity: 0, x: isEven ? -50 : 50 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, margin: '-100px' }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as any }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                     className="w-full lg:w-1/2 flex justify-end"
                   >
                     <div 

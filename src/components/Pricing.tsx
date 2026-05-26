@@ -138,7 +138,7 @@ export default function Pricing({ onPlanSelect }: PricingProps) {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as any }}
+                transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                 className={`relative flex flex-col justify-between rounded-3xl p-8 bg-slate-950/40 border backdrop-blur-md transition-all duration-300 hover:border-cyan-500/20 hover:-translate-y-1.5 ${
                   plan.isPopular ? 'border-cyan-500/30 ring-1 ring-cyan-500/20' : 'border-white/5'
                 }`}

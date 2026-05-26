@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, BarChart2, MessageSquare, Sparkles, Database, Check, Clock } from 'lucide-react';
+import { Send, BarChart2, MessageSquare, Sparkles, Database, Check, Clock, Cpu } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ChatMessage {
@@ -113,21 +113,39 @@ export default function DashboardShowcase() {
         setActiveAgents((prev) => prev + 1);
         setEfficiency((prev) => Math.min(99.9, +(prev + Math.random() * 0.4).toFixed(1)));
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Gemini API error:", error);
+        const errMessage = error instanceof Error ? error.message : String(error);
         setMessages((prev) => [...prev, {
           sender: 'neuro',
-          text: `❌ **Core Connection Failure:**\n\nFailed to authenticate with Gemini API layers.\n\n**Details**: ${error?.message || 'Unknown network error. Check that your Google Gemini API Key is correct in the Prompt Variables tab.'}`
+          text: `❌ **Core Connection Failure:**\n\nFailed to authenticate with Gemini API layers.\n\n**Details**: ${errMessage}`
         }]);
         setIsTyping(false);
       }
     } else {
       // Simulate response
       setTimeout(() => {
+        const input = text.toLowerCase();
         let aiText = '';
         let isCode = false;
-        
-        if (text.toLowerCase().includes('graphql') || text.toLowerCase().includes('resolver')) {
+
+        if (input.includes('hi') || input.includes('hello') || input.includes('hey') || input.includes('greeting') || input.includes('yo')) {
+          aiText = "🤖 **System Sync Established.**\n\nHello! Welcome to the **NeuroAI Control Console**. I am your primary computational core. How can I assist you with building autonomous workflows, testing edge APIs, or indexing model cache nodes today?\n\n*Try asking about \"pricing\", \"features\", or \"integrations\" to examine my subsystems!*";
+        } else if (input.includes('pricing') || input.includes('price') || input.includes('cost') || input.includes('plan') || input.includes('monthly') || input.includes('starter') || input.includes('pro') || input.includes('enterprise')) {
+          aiText = "💳 **NeuroAI Computation Pricing & Plans:**\n\nWe offer three scalable computing tiers, tailored to your platform workload:\n\n1. **Starter ($19/mo)**: Ideal for visual creators and independent developers. Includes 500k monthly tokens and 3 active agent sandboxes.\n2. **Pro ($49/mo - RECOMMENDED)**: Perfect for growing startups. Includes 5,000,000 monthly tokens, optimized embeddings cache, 12 edge gateways, and Redis variable syncing.\n3. **Enterprise ($199/mo)**: Engineered for large-scale operations. Includes unlimited tokens, custom core model fine-tuning, and dedicated solutions SLA support.\n\n*Tip: Toggle annual billing inside our Pricing Section below to save 20% immediately!*";
+        } else if (input.includes('features') || input.includes('capabilities') || input.includes('assistant')) {
+          aiText = "🛠️ **NeuroAI Platform Core Capabilities:**\n\nOur decentralized network provides high-efficiency developer tools:\n\n*   **AI Chat Assistant**: Stream custom prompts through context-aware document directories.\n*   **Smart Automation**: Trigger event-driven logic workflows without complex backend setups.\n*   **Edge APIs**: Compile and deploy ultra-low latency gateway relays globally (sub-120ms execution).\n*   **Live Analytics**: Audit inference speeds, token cache ratios, and compute savings dynamically.";
+        } else if (input.includes('ai') || input.includes('intelligence') || input.includes('llm') || input.includes('model') || input.includes('temperature')) {
+          aiText = "🧠 **Core Models & Inference Settings:**\n\nNeuroAI supports direct connection with state-of-the-art LLM architectures like **Gemini 1.5/2.5 Flash** and **Pro** cores.\n\nTo fine-tune your parameters, open the **Prompt Variables** tab in this console:\n*   **Model Temperature**: Slide from 0.0 (precise logic/code compiling) to 1.0 (creative dialogue).\n*   **Credentials**: Connect your Google Gemini API Key to unlock real-world unscripted AI chat sessions!";
+        } else if (input.includes('automation') || input.includes('automate') || input.includes('workflow') || input.includes('pipeline') || input.includes('node')) {
+          aiText = "⚡ **Autonomous Workflow Pipelines:**\n\nWith NeuroAI, you can set up edge automation triggers instantly:\n\n1. **Connect Triggers**: Detect database commits, webhooks, or server events.\n2. **Process Prompt Layers**: Embed contextual document rules and model schemas.\n3. **Deploy Webhooks**: Automatically dispatch custom code responses, send email campaigns, or run system scripts in under 200ms.";
+        } else if (input.includes('dashboard') || input.includes('console') || input.includes('analytics') || input.includes('metrics') || input.includes('logs')) {
+          aiText = "📊 **Control Console Guide:**\n\nYou are currently inside our high-fidelity console showcase! Switch between active dashboard views using the sidebar tabs:\n\n*   **AI Assistant**: Test generative models and review automated script returns.\n*   **Live Pipelines**: Track AVG latency (simulating ~84ms), request throughputs, and cache ratios.\n*   **Prompt Variables**: Mask your API Key, switch computational models, and adjust temperature slide scales.";
+        } else if (input.includes('integrate') || input.includes('integration') || input.includes('api') || input.includes('database') || input.includes('key')) {
+          aiText = "🔌 **Developer API & Database Integrations:**\n\nConnect your stack directly into our neural edge framework:\n\n*   **Gateways**: Global edge compile paths serving queries with zero cold starts.\n*   **Variables Cache**: Store parameters securely using our integrated Redis syncing layers.\n*   **Platforms**: Continuous deploy connections supporting GitHub repositories, Vercel, and custom Docker servers.";
+        } else if (input.includes('support') || input.includes('help') || input.includes('doc') || input.includes('email') || input.includes('discord')) {
+          aiText = "📞 **NeuroAI Support & Resources:**\n\nWe provide 24/7 dedicated assistance to scale your system integrations:\n\n*   **Support Email**: Send queries to **support@neuroai.sh** (response latency under 2 hours).\n*   **Developer Center**: Review extensive documentation, prompt templates, and security audits.\n*   **Community**: Connect with other creators in our active Discord node (link in the Contact section).";
+        } else if (input.includes('graphql') || input.includes('resolver')) {
           aiText = `\`\`\`javascript
 // GraphQL Resolver for User Profiles
 const userProfileResolver = {
@@ -149,10 +167,11 @@ const userProfileResolver = {
 export default userProfileResolver;
 \`\`\``;
           isCode = true;
-        } else if (text.toLowerCase().includes('bottleneck') || text.toLowerCase().includes('pipeline')) {
-          aiText = "🔍 **Bottleneck Audit Complete:**\n\n1. Found **34ms** query choke point in \`orders-db-read\` cluster.\n2. Proposed Fix: Establish composite index on \`[user_id, status]\` key matrices.\n3. Latency expected to drop to **4ms** (approx 8.5x increase in operational velocity).";
+        } else if (input.includes('bottleneck') || input.includes('pipeline')) {
+          aiText = "🔍 **Bottleneck Audit Complete:**\n\n1. Found **34ms** query choke point in `orders-db-read` cluster.\n2. Proposed Fix: Establish composite index on `[user_id, status]` key matrices.\n3. Latency expected to drop to **4ms** (approx 8.5x increase in operational velocity).";
         } else {
-          aiText = `✨ **Autonomous Workflow Created:**\n\n1. **Trigger**: User signs up via Web Client.\n2. **Action A**: Extract embedding using \`neuro-embed-v2\` (Done - 18ms).\n3. **Action B**: Inject personalized workflow variables into DB grid.\n4. **Action C**: Dispatched glowing welcome campaign through edge relays.`;
+          const bt = '`';
+          aiText = `✨ **Autonomous Pipeline Drafted:**\n\nI have registered your prompt target: ${bt}"${text}"${bt}.\n\nTo execute this request live against real generative databases, please connect your Google Gemini API Key in the **Prompt Variables** tab. Otherwise, type **"features"** or **"pricing"** to explore the console capabilities!`;
         }
 
         setMessages((prev) => [...prev, { sender: 'neuro', text: aiText, isCode }]);
@@ -291,13 +310,19 @@ export default userProfileResolver;
                       key={idx}
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
+                      {msg.sender === 'neuro' && (
+                        <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                          <Cpu className="w-4 h-4 animate-pulse" />
+                        </div>
+                      )}
+                      
                       <div
-                        className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg ${
+                        className={`max-w-[78%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg ${
                           msg.sender === 'user'
-                            ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-br-none'
-                            : 'bg-slate-900/80 border border-white/5 text-slate-200 rounded-bl-none font-poppins'
+                            ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 text-white rounded-br-none'
+                            : 'bg-slate-900/80 border border-cyan-500/20 text-slate-100 rounded-bl-none font-poppins shadow-cyan-500/5'
                         }`}
                       >
                         {msg.isCode ? (
@@ -320,9 +345,13 @@ export default userProfileResolver;
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="flex justify-start"
+                        className="flex items-center gap-3 justify-start"
                       >
-                        <div className="bg-slate-900/80 border border-white/5 rounded-2xl rounded-bl-none p-4 flex items-center gap-1.5">
+                        <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                          <Cpu className="w-4 h-4 animate-pulse" />
+                        </div>
+                        
+                        <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl rounded-bl-none p-4 flex items-center gap-1.5 shadow-lg shadow-cyan-500/5">
                           <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                           <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                           <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -361,15 +390,17 @@ export default userProfileResolver;
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder="Prompt NeuroAI Core..."
-                      className="flex-grow bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/30 focus:ring-1 focus:ring-cyan-500/20 transition-all font-poppins text-white placeholder-slate-500"
+                      className="flex-grow bg-slate-950/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/30 transition-all font-poppins text-white placeholder-slate-500 shadow-[0_0_20px_rgba(6,182,212,0.02)] focus:shadow-[0_0_25px_rgba(6,182,212,0.12)]"
                     />
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       type="submit"
                       disabled={isTyping || !chatInput.trim()}
-                      className="p-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 disabled:opacity-50 text-white rounded-xl flex items-center justify-center transition-all duration-300"
+                      className="p-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 disabled:opacity-50 text-white rounded-xl flex items-center justify-center transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.15)] cursor-pointer"
                     >
                       <Send className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                   </form>
                 </div>
               </div>

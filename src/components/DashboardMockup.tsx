@@ -247,7 +247,7 @@ export default function DashboardMockup() {
           repeat: Infinity,
           ease: 'easeInOut'
         }}
-        className="absolute -top-10 -left-6 md:-left-16 bg-[#030014]/80 backdrop-blur-md border border-cyan-500/30 shadow-2xl p-4 rounded-xl flex items-center gap-3 w-48 pointer-events-none"
+        className="absolute -top-10 -left-6 md:-left-16 bg-[#030014]/80 backdrop-blur-md border border-cyan-500/30 shadow-2xl p-4 rounded-xl hidden sm:flex items-center gap-3 w-48 pointer-events-none"
       >
         <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">⚡</div>
         <div>
@@ -266,7 +266,7 @@ export default function DashboardMockup() {
           ease: 'easeInOut',
           delay: 0.5
         }}
-        className="absolute -bottom-10 -right-6 md:-right-16 bg-[#030014]/80 backdrop-blur-md border border-purple-500/30 shadow-2xl p-4 rounded-xl flex items-center gap-3 w-52 pointer-events-none"
+        className="absolute -bottom-10 -right-6 md:-right-16 bg-[#030014]/80 backdrop-blur-md border border-purple-500/30 shadow-2xl p-4 rounded-xl hidden sm:flex items-center gap-3 w-52 pointer-events-none"
       >
         <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center font-bold text-purple-400">🤖</div>
         <div>

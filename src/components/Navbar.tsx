@@ -114,15 +114,18 @@ export default function Navbar({ onStartTrial }: NavbarProps) {
             className="md:hidden bg-[#030014]/95 border-b border-white/10 backdrop-blur-xl overflow-hidden"
           >
             <div className="px-6 py-6 flex flex-col gap-5">
-              {navItems.map((item) => (
-                <a
+              {navItems.map((item, idx) => (
+                <motion.a
+                  initial={{ opacity: 0, x: -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05, duration: 0.3 }}
                   key={item.name}
                   href={item.href}
                   onClick={(e) => handleScrollTo(e, item.href)}
                   className="text-lg font-medium text-slate-300 hover:text-cyan-400 transition-colors duration-200"
                 >
                   {item.name}
-                </a>
+                </motion.a>
               ))}
               <button
                 onClick={() => {

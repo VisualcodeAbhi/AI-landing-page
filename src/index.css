@@ -76,11 +76,17 @@
 }
 
 /* Base resets */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-poppins);
   background-color: var(--color-dark-bg);
   color: #f1f5f9;
-  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {

@@ -8,8 +8,24 @@ interface HeroProps {
   onGetStarted?: () => void;
 }
 
+const words = ['Creators', 'Developers', 'Businesses', 'Startups'];
+
+const PARTICLE_POSITIONS = [
+  { top: '12%', left: '15%', duration: 6, delay: 0.5 },
+  { top: '35%', left: '85%', duration: 8, delay: 1.2 },
+  { top: '75%', left: '25%', duration: 7, delay: 0.2 },
+  { top: '55%', left: '70%', duration: 9, delay: 2.1 },
+  { top: '22%', left: '45%', duration: 5, delay: 1.5 },
+  { top: '88%', left: '60%', duration: 6, delay: 0.8 },
+  { top: '48%', left: '10%', duration: 7, delay: 1.9 },
+  { top: '80%', left: '90%', duration: 8, delay: 0.3 },
+  { top: '15%', left: '78%', duration: 9, delay: 2.5 },
+  { top: '65%', left: '38%', duration: 6, delay: 1.1 },
+  { top: '92%', left: '12%', duration: 5, delay: 0.7 },
+  { top: '30%', left: '52%', duration: 7, delay: 1.8 },
+];
+
 export default function Hero({ onGetStarted }: HeroProps) {
-  const words = ['Creators', 'Developers', 'Businesses', 'Startups'];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -38,13 +54,13 @@ export default function Hero({ onGetStarted }: HeroProps) {
 
       {/* Floating Particles (Staggered Dots) */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {[...Array(12)].map((_, i) => (
+        {PARTICLE_POSITIONS.map((pos, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400/40 rounded-full"
             style={{
-              top: `${Math.random() * 90}%`,
-              left: `${Math.random() * 95}%`,
+              top: pos.top,
+              left: pos.left,
             }}
             animate={{
               y: [0, -25, 0],
@@ -52,10 +68,10 @@ export default function Hero({ onGetStarted }: HeroProps) {
               scale: [1, 1.5, 1],
             }}
             transition={{
-              duration: 5 + Math.random() * 5,
+              duration: pos.duration,
               repeat: Infinity,
               ease: 'easeInOut',
-              delay: Math.random() * 3,
+              delay: pos.delay,
             }}
           />
         ))}
@@ -81,7 +97,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-          className="text-5xl md:text-7xl font-space font-bold leading-[1.1] max-w-4xl text-white"
+          className="text-4xl sm:text-5xl md:text-7xl font-space font-bold leading-[1.1] max-w-4xl text-white"
         >
           Build Smarter with <br className="hidden md:inline" />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-500 text-glow-cyan">
