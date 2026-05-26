@@ -18,7 +18,7 @@ export default function DashboardShowcase() {
   // Real Gemini states
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('neuro_gemini_api_key') || (import.meta.env.VITE_GEMINI_API_KEY as string) || '');
   const [apiKeyInput, setApiKeyInput] = useState('');
-  const [modelType, setModelType] = useState(() => localStorage.getItem('neuro_gemini_model') || 'gemini-1.5-flash');
+  const [modelType, setModelType] = useState(() => localStorage.getItem('neuro_gemini_model') || 'gemini-2.0-flash');
   const [temperature, setTemperature] = useState(0.2);
 
   // Dynamic metrics
@@ -545,9 +545,10 @@ export default userProfileResolver;
                         }}
                         className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/30 font-space"
                       >
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep)</option>
-                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Latest)</option>
+                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (Fast)</option>
+                        <option value="gemini-2.0-pro">Gemini 2.0 Pro (Deep)</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Legacy)</option>
                       </select>
                     </div>
 
